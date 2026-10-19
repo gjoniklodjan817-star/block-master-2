@@ -1,4 +1,295 @@
-<!doctype html><html lang="sq"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Block Master 2 - Deluxe</title><style>*{box-sizing:border-box}body{margin:0;background:linear-gradient(#283f76,#0d142b);font:16px Arial;color:white;text-align:center;padding:16px}.game{max-width:480px;margin:auto}h1{color:#ffd45c;font-size:clamp(23px,7vw,34px)}.stats{display:flex;justify-content:space-around;background:#ffffff16;border-radius:12px;padding:15px;margin:12px 0}#board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:3px;padding:7px;background:#101a35;border-radius:12px;aspect-ratio:1}.cell{background:#3b527f;border-radius:4px;aspect-ratio:1}.cell.filled{background:var(--color)}#pieces{display:flex;gap:10px;margin:20px 0}.piece{flex:1;min-height:92px;background:#263b69;border:2px solid #5874a7;border-radius:12px;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;cursor:grab}.piece.selected{border-color:#ffdb68;background:#435c90}.mini{display:grid;gap:3px}.block{width:19px;height:19px;border-radius:3px}.blank{width:19px;height:19px}button{border:0;border-radius:12px;background:#ffd45c;color:#16203a;font-weight:bold;padding:14px 22px;font-size:16px}#message{min-height:44px;color:#c7e5ff}.ghost{position:fixed;pointer-events:none;z-index:99;opacity:.85;display:none;background:#1a2a4bcc;padding:8px;border-radius:8px}.cell.preview-ok{background:#75e8a9!important;opacity:.85}.cell.preview-bad{background:#ff6c7b!important;opacity:.8}.hint{font-size:13px;color:#b7c6e3} .cell.filled{box-shadow:inset 0 -4px 0 #0003,0 0 9px #ffffff18;transition:background .13s,transform .13s}.piece{transition:border-color .15s,transform .15s}.piece:active{transform:scale(.97)}#board.celebrate{animation:pop .45s ease}@keyframes pop{50%{filter:brightness(1.5);transform:scale(1.015)}}@media(max-width:420px){body{padding:10px}.piece{min-height:78px}.block,.blank{width:16px;height:16px}} </style></head><body><main class="game"><h1>🧩 BLOCK MASTER 2</h1><div class="stats"><span>Niveli <b id="level">1</b></span><span>Pikë <b id="score">0</b></span><span>Rekordi <b id="best">0</b></span></div><p id="goal">Objektivi: 100 pikë</p><div id="board">
-<div class="cell" data-i="0"></div><div class="cell" data-i="1"></div><div class="cell" data-i="2"></div><div class="cell" data-i="3"></div><div class="cell" data-i="4"></div><div class="cell" data-i="5"></div><div class="cell" data-i="6"></div><div class="cell" data-i="7"></div><div class="cell" data-i="8"></div><div class="cell" data-i="9"></div><div class="cell" data-i="10"></div><div class="cell" data-i="11"></div><div class="cell" data-i="12"></div><div class="cell" data-i="13"></div><div class="cell" data-i="14"></div><div class="cell" data-i="15"></div><div class="cell" data-i="16"></div><div class="cell" data-i="17"></div><div class="cell" data-i="18"></div><div class="cell" data-i="19"></div><div class="cell" data-i="20"></div><div class="cell" data-i="21"></div><div class="cell" data-i="22"></div><div class="cell" data-i="23"></div><div class="cell" data-i="24"></div><div class="cell" data-i="25"></div><div class="cell" data-i="26"></div><div class="cell" data-i="27"></div><div class="cell" data-i="28"></div><div class="cell" data-i="29"></div><div class="cell" data-i="30"></div><div class="cell" data-i="31"></div><div class="cell" data-i="32"></div><div class="cell" data-i="33"></div><div class="cell" data-i="34"></div><div class="cell" data-i="35"></div><div class="cell" data-i="36"></div><div class="cell" data-i="37"></div><div class="cell" data-i="38"></div><div class="cell" data-i="39"></div><div class="cell" data-i="40"></div><div class="cell" data-i="41"></div><div class="cell" data-i="42"></div><div class="cell" data-i="43"></div><div class="cell" data-i="44"></div><div class="cell" data-i="45"></div><div class="cell" data-i="46"></div><div class="cell" data-i="47"></div><div class="cell" data-i="48"></div><div class="cell" data-i="49"></div><div class="cell" data-i="50"></div><div class="cell" data-i="51"></div><div class="cell" data-i="52"></div><div class="cell" data-i="53"></div><div class="cell" data-i="54"></div><div class="cell" data-i="55"></div><div class="cell" data-i="56"></div><div class="cell" data-i="57"></div><div class="cell" data-i="58"></div><div class="cell" data-i="59"></div><div class="cell" data-i="60"></div><div class="cell" data-i="61"></div><div class="cell" data-i="62"></div><div class="cell" data-i="63"></div></div><p id="message">Zgjidh një formë dhe prek tabelën.</p><div id="pieces"><div class="piece" data-p="0"><div class="mini"><div class="block" style="background:#46c5ff"></div></div></div><div class="piece" data-p="1"><div class="mini"><div class="block" style="background:#ff9d49"></div></div></div><div class="piece" data-p="2"><div class="mini"><div class="block" style="background:#55df9b"></div></div></div></div><button id="restart">🔄 Lojë e re</button><p class="hint">Tërhiq bllokun drejt tabelës ose kliko formën dhe pastaj katrorin.</p></main><div class="ghost" id="ghost"></div><script>
-(function(){'use strict';var board=document.getElementById('board'),pieceEls=document.querySelectorAll('.piece'),cells=Array(64).fill(null),score=0,best=0,offers=[],selected=-1,drag=null;var shapes=[[[0,0]],[[0,0],[0,1]],[[0,0],[1,0]],[[0,0],[0,1],[0,2]],[[0,0],[1,0],[2,0]],[[0,0],[0,1],[1,0],[1,1]],[[0,0],[1,0],[1,1]],[[0,0],[0,1],[1,1]],[[0,0],[0,1],[1,0]],[[0,0],[0,1],[0,2],[0,3]],[[0,0],[1,0],[2,0],[3,0]],[[0,0],[0,1],[0,2],[1,1]],[[0,0],[1,0],[2,0],[2,1]],[[0,0],[0,1],[1,1],[1,2]],[[0,0],[0,1],[1,0],[1,1],[2,0],[2,1]],[[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]],[[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]],colors=['#46c5ff','#ff9d49','#bb83ff','#55df9b','#ff649c'];function random(){var pool=score<100?shapes.slice(0,14):shapes;return {shape:pool[Math.floor(Math.random()*pool.length)],color:colors[Math.floor(Math.random()*colors.length)]}}function newOffers(){offers=[random(),random(),random()];selected=-1}function fits(p,r,c){return p&&p.shape.every(function(a){return r+a[0]<8&&c+a[1]<8&&cells[(r+a[0])*8+c+a[1]]===null})}function canMove(){return offers.some(function(p){if(!p)return false;for(var i=0;i<64;i++)if(fits(p,Math.floor(i/8),i%8))return true;return false})}function mini(p){var el=document.createElement('div');el.className='mini';var h=1,w=1;p.shape.forEach(function(a){h=Math.max(h,a[0]+1);w=Math.max(w,a[1]+1)});el.style.gridTemplateColumns='repeat('+w+',19px)';for(var y=0;y<h;y++)for(var x=0;x<w;x++){var b=document.createElement('div');var on=p.shape.some(function(a){return a[0]===y&&a[1]===x});b.className=on?'block':'blank';if(on)b.style.background=p.color;el.appendChild(b)}return el}function render(){document.getElementById('score').textContent=score;document.getElementById('level').textContent=Math.floor(score/100)+1;document.getElementById('goal').textContent='Objektivi: '+(Math.floor(score/100)+1)*100+' pikë';document.getElementById('best').textContent=best;Array.prototype.forEach.call(board.children,function(el,i){el.className='cell'+(cells[i]?' filled':'');el.style.setProperty('--color',cells[i]||'#3b527f')});Array.prototype.forEach.call(pieceEls,function(el,i){el.className='piece'+(selected===i?' selected':'');el.innerHTML='';if(offers[i])el.appendChild(mini(offers[i]))})}function save(){try{localStorage.setItem('bm2_deluxe',JSON.stringify({cells:cells,score:score,best:best,offers:offers}))}catch(e){}}function message(s){document.getElementById('message').textContent=s}function place(i){if(selected<0||!offers[selected])return message('Zgjidh një formë!');var p=offers[selected],r=Math.floor(i/8),c=i%8;if(!fits(p,r,c))return message('❌ Nuk ka vend këtu!');p.shape.forEach(function(a){cells[(r+a[0])*8+c+a[1]]=p.color});score+=p.shape.length*5;offers[selected]=null;selected=-1;var clear={};for(var y=0;y<8;y++){var full=true;for(var x=0;x<8;x++)if(!cells[y*8+x])full=false;if(full)for(x=0;x<8;x++)clear[y*8+x]=true}for(x=0;x<8;x++){full=true;for(y=0;y<8;y++)if(!cells[y*8+x])full=false;if(full)for(y=0;y<8;y++)clear[y*8+x]=true}var n=Object.keys(clear).length;Object.keys(clear).forEach(function(k){cells[+k]=null});score+=n*10+(n>=16?100:0);if(n){board.classList.remove('celebrate');void board.offsetWidth;board.classList.add('celebrate');setTimeout(function(){board.classList.remove('celebrate')},500)}if(score>best)best=score;message(n?'🎉 Kombinim! +'+(n*10+(n>=16?100:0))+' pikë!':'Vazhdo!');if(offers.every(function(p){return !p}))newOffers();if(!canMove())message('Loja mbaroi! Shtyp Lojë e re.');render();save()}function reset(){cells=Array(64).fill(null);score=0;newOffers();render();save();message('Zgjidh një formë dhe prek tabelën!')}board.addEventListener('click',function(e){var el=e.target.closest('.cell');if(el)place(Number(el.dataset.i))});Array.prototype.forEach.call(pieceEls,function(el,i){el.addEventListener('click',function(){if(!offers[i])return;selected=i;render();message('Prek vendin ku do ta vendosësh!')});el.addEventListener('pointerdown',function(e){if(!offers[i]||e.button>0)return;drag={i:i,id:e.pointerId,x:e.clientX,y:e.clientY,moved:false,target:el};selected=i;try{el.setPointerCapture(e.pointerId)}catch(err){};});});function clearPreview(){Array.prototype.forEach.call(board.children,function(el){el.classList.remove('preview-ok','preview-bad')})}function targetCell(x,y){var rect=board.getBoundingClientRect();if(x<rect.left||x>=rect.right||y<rect.top||y>=rect.bottom)return null;var col=Math.floor((x-rect.left-7)/(rect.width-14)*8),row=Math.floor((y-rect.top-7)/(rect.height-14)*8);if(row<0||col<0||row>7||col>7)return null;return row*8+col}function showDrag(e){if(!drag||e.pointerId!==drag.id)return;var d=drag;if(Math.hypot(e.clientX-d.x,e.clientY-d.y)>7)d.moved=true;if(!d.moved)return;e.preventDefault();var p=offers[d.i];if(!p)return;var ghost=document.getElementById('ghost');ghost.style.display='block';ghost.style.left=(e.clientX-26)+'px';ghost.style.top=(e.clientY-95)+'px';ghost.innerHTML='';ghost.appendChild(mini(p));clearPreview();var i=targetCell(e.clientX,e.clientY-45);if(i===null)return;var r=Math.floor(i/8),c=i%8,ok=fits(p,r,c);p.shape.forEach(function(a){var rr=r+a[0],cc=c+a[1];if(rr<8&&cc<8)board.children[rr*8+cc].classList.add(ok?'preview-ok':'preview-bad')})}function finishDrag(e){if(!drag||e.pointerId!==drag.id)return;var d=drag;drag=null;document.getElementById('ghost').style.display='none';clearPreview();if(d.moved){var i=targetCell(e.clientX,e.clientY-45);if(i!==null){selected=d.i;place(i)}else{selected=d.i;render();message('Lësho formën mbi tabelë!')}}else{selected=d.i;render();message('Tani prek një katror në tabelë!')}}window.addEventListener('pointermove',showDrag,{passive:false});window.addEventListener('pointerup',finishDrag);window.addEventListener('pointercancel',function(){drag=null;document.getElementById('ghost').style.display='none';clearPreview()});document.getElementById('restart').onclick=reset;try{var s=JSON.parse(localStorage.getItem('bm2_deluxe'));if(s&&s.cells&&s.cells.length===64&&s.offers&&s.offers.length===3){cells=s.cells;score=s.score||0;best=s.best||0;offers=s.offers;render()}else reset()}catch(e){reset()}
-})();</script></body></html>
+
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Block Master 2</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#304a8c,#101936 65%,#090e22);color:white;font-family:Arial,sans-serif;padding:18px 12px;user-select:none}
+.app{max-width:500px;margin:auto}
+.top{display:flex;align-items:center;justify-content:space-between}
+small{color:#80dfff;letter-spacing:3px;font-weight:bold}
+h1{font-size:clamp(25px,7vw,38px);margin:8px 0 20px}
+h1 span{color:#ffd66e}
+button{cursor:pointer;font-weight:bold;border:0}
+#sound{background:#304573;color:white;border-radius:15px;padding:14px;font-size:22px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.stat{background:linear-gradient(140deg,#304775,#1a2749);border:1px solid #536b9c;border-radius:17px;padding:13px 9px}
+.stat label{display:block;color:#bdccec;font-size:11px;letter-spacing:1.5px}
+.stat strong{display:block;font-size:31px;margin-top:7px}
+.stat:first-child strong{color:#ffd66e}
+.progress{display:flex;justify-content:space-between;margin:22px 0 9px;color:#c5d3ef;font-size:13px}
+.track{height:10px;background:#304269;border-radius:20px;overflow:hidden}
+#bar{height:100%;width:0;background:linear-gradient(90deg,#4fd6ff,#ffd66e);transition:width .3s}
+.frame{margin-top:20px;padding:10px;background:linear-gradient(135deg,#5875b7,#23365e);border:1px solid #849bd1;border-radius:23px}
+#board{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;aspect-ratio:1;background:#101a35;padding:8px;border-radius:15px;touch-action:none}
+.cell{background:#283a63;border-radius:5px;min-width:0}
+.cell.filled{background:var(--c);box-shadow:inset 0 -5px #0003,inset 0 2px #ffffff55}
+.cell.ok{background:#70e8ad!important}
+.cell.bad{background:#ff637d!important}
+.section{display:flex;justify-content:space-between;align-items:center;margin:23px 2px 12px}
+.section b{font-size:14px;letter-spacing:1px}
+.section span{color:#b7c8eb;font-size:12px}
+#pieces{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.piece{height:100px;background:linear-gradient(145deg,#304775,#1b294d);border:2px solid #5873a9;border-radius:18px;display:flex;align-items:center;justify-content:center;touch-action:none}
+.piece.selected{border-color:#ffd66e;box-shadow:0 0 17px #ffd66e55}
+.mini{display:grid;gap:3px}
+.mini div{width:18px;height:18px;border-radius:3px}
+.mini .on{background:var(--c);box-shadow:inset 0 -4px #0003,inset 0 2px #ffffff55}
+#msg{text-align:center;color:#cbdafa;min-height:40px;font-size:14px;margin:18px 0 8px}
+.actions{display:flex;gap:10px}
+.actions button{flex:1;padding:15px 7px;border-radius:13px;background:#304575;color:white}
+.actions .primary{background:#ffd66e;color:#182443}
+#ghost{display:none;position:fixed;pointer-events:none;z-index:10;background:#14244acc;padding:8px;border-radius:10px;opacity:.9}
+#overlay{display:none;position:fixed;inset:0;background:#050b1ddd;align-items:center;justify-content:center;padding:25px;z-index:20}
+#overlay.show{display:flex}
+.modal{text-align:center;background:linear-gradient(#314c89,#16254d);border:1px solid #819bd0;border-radius:22px;padding:28px;width:100%;max-width:350px}
+.modal p{color:#d5e0f9}
+.modal button{background:#ffd66e;color:#182443;padding:15px 25px;border-radius:12px}
+footer{text-align:center;color:#8b9fc7;font-size:11px;margin:25px}
+@media(max-width:380px){.frame{padding:7px}#board{gap:3px;padding:6px}.piece{height:85px}.mini div{width:15px;height:15px}}
+</style>
+</head>
+<body>
+<main class="app">
+<div class="top">
+<div>
+<small>NEON PUZZLE EDITION</small>
+<h1>BLOCK <span>MASTER 2</span></h1>
+</div>
+<button id="sound">♫</button>
+</div>
+<div class="stats">
+<div class="stat"><label>NIVELI</label><strong id="level">1</strong></div>
+<div class="stat"><label>PIKËT</label><strong id="score">0</strong></div>
+<div class="stat"><label>REKORDI</label><strong id="best">0</strong></div>
+</div>
+<div class="progress"><span id="goal">Deri në nivelin 2</span><span id="progress">0 / 200</span></div>
+<div class="track"><div id="bar"></div></div>
+<div class="frame"><div id="board"></div></div>
+<div class="section"><b>ZGJIDH NJË FORMË</b><span>3 forma për raund</span></div>
+<div id="pieces"></div>
+<p id="msg">Prek një formë dhe vendose në tabelë.</p>
+<div class="actions">
+<button id="restart">↻ Lojë e re</button>
+<button class="primary" id="hint">✦ Sugjerim</button>
+</div>
+<footer>Block Master 2 · Thyej rekordin!</footer>
+</main>
+<div id="ghost"></div>
+<div id="overlay"><div class="modal"><h2>Loja mbaroi!</h2><p id="result"></p><button id="again">Luaj përsëri</button></div></div>
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const board=$("board"),pieces=$("pieces");
+const shapes=[
+[[0,0]],[[0,0],[0,1]],[[0,0],[1,0]],
+[[0,0],[0,1],[0,2]],[[0,0],[1,0],[2,0]],
+[[0,0],[0,1],[1,0],[1,1]],
+[[0,0],[1,0],[1,1]],
+[[0,0],[0,1],[1,1]],
+[[0,0],[0,1],[1,0]],
+[[0,0],[0,1],[0,2],[0,3]],
+[[0,0],[1,0],[2,0],[3,0]],
+[[0,0],[0,1],[0,2],[1,1]],
+[[0,0],[1,0],[2,0],[2,1]],
+[[0,0],[0,1],[1,1],[1,2]],
+[[0,0],[0,1],[1,0],[1,1],[2,0],[2,1]],
+[[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]],
+[[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
+];
+const colors=["#4bcaff","#ff9c57","#b38aff","#53dfa7","#ff659a","#ffd166"];
+let cells=Array(64).fill(null),offers=[],score=0,best=0,selected=-1,drag=null,sound=true,audio;
+const key="block_master_2_pro";
+for(let i=0;i<64;i++){
+let e=document.createElement("div");
+e.className="cell";e.dataset.i=i;board.append(e);
+}
+for(let i=0;i<3;i++){
+let e=document.createElement("div");
+e.className="piece";e.dataset.p=i;pieces.append(e);
+}
+const tiles=[...board.children],slots=[...pieces.children];
+function tone(f=550){
+if(!sound)return;
+try{
+audio=audio||new(window.AudioContext||window.webkitAudioContext)();
+let o=audio.createOscillator(),g=audio.createGain();
+o.frequency.value=f;g.gain.value=.035;
+o.connect(g);g.connect(audio.destination);
+o.start();o.stop(audio.currentTime+.09);
+}catch(e){}
+}
+function pick(){
+let pool=score<150?shapes.slice(0,14):shapes;
+return {shape:pool[Math.floor(Math.random()*pool.length)],color:colors[Math.floor(Math.random()*colors.length)]};
+}
+function fresh(){offers=[pick(),pick(),pick()];selected=-1}
+function fits(p,r,c){
+return !!p&&p.shape.every(([y,x])=>r+y<8&&c+x<8&&cells[(r+y)*8+c+x]===null);
+}
+function possible(){
+return offers.some(p=>{
+if(!p)return false;
+for(let i=0;i<64;i++)if(fits(p,Math.floor(i/8),i%8))return true;
+return false;
+});
+}
+function mini(p){
+let e=document.createElement("div");e.className="mini";
+let h=Math.max(...p.shape.map(a=>a[0]))+1;
+let w=Math.max(...p.shape.map(a=>a[1]))+1;
+e.style.gridTemplateColumns=`repeat(${w},auto)`;
+for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+let b=document.createElement("div");
+if(p.shape.some(a=>a[0]===y&&a[1]===x)){
+b.className="on";b.style.setProperty("--c",p.color);
+}
+e.append(b);
+}
+return e;
+}
+function level(){return Math.floor(score/200)+1}
+function render(){
+let lv=level(),start=(lv-1)*200;
+$("level").textContent=lv;
+$("score").textContent=score;
+$("best").textContent=best;
+$("goal").textContent="Deri në nivelin "+(lv+1);
+$("progress").textContent=(score-start)+" / 200";
+$("bar").style.width=((score-start)/2)+"%";
+tiles.forEach((e,i)=>{
+e.className="cell"+(cells[i]?" filled":"");
+e.style.setProperty("--c",cells[i]||"#283a63");
+});
+slots.forEach((e,i)=>{
+e.className="piece"+(selected===i?" selected":"");
+e.replaceChildren();
+if(offers[i])e.append(mini(offers[i]));
+});
+}
+function save(){
+try{localStorage.setItem(key,JSON.stringify({cells,offers,score,best}))}catch(e){}
+}
+function say(s){$("msg").textContent=s}
+function gameOver(){
+if(!possible()){
+$("result").textContent="Fitove "+score+" pikë. Rekordi: "+best+".";
+$("overlay").classList.add("show");tone(220);
+}
+}
+function place(i){
+if(selected<0||!offers[selected]){say("Zgjidh një formë!");return}
+let p=offers[selected],r=Math.floor(i/8),c=i%8;
+if(!fits(p,r,c)){say("Nuk ka vend këtu!");tone(200);return}
+let old=level();
+p.shape.forEach(([y,x])=>cells[(r+y)*8+c+x]=p.color);
+score+=p.shape.length*5;
+offers[selected]=null;selected=-1;
+let clear=new Set();
+for(let y=0;y<8;y++){
+if(Array.from({length:8},(_,x)=>cells[y*8+x]).every(Boolean))
+for(let x=0;x<8;x++)clear.add(y*8+x);
+}
+for(let x=0;x<8;x++){
+if(Array.from({length:8},(_,y)=>cells[y*8+x]).every(Boolean))
+for(let y=0;y<8;y++)clear.add(y*8+x);
+}
+clear.forEach(i=>cells[i]=null);
+let bonus=clear.size*10+(clear.size>=16?100:0);
+score+=bonus;best=Math.max(best,score);
+if(offers.every(p=>!p))fresh();
+render();save();tone(clear.size?850:550);
+if(level()>old)say("🏆 Niveli i ri!");
+else say(clear.size?"✨ Kombinim! +"+bonus+" pikë!":"Shumë mirë! Vazhdo!");
+gameOver();
+}
+function reset(){
+cells=Array(64).fill(null);score=0;fresh();
+$("overlay").classList.remove("show");
+render();save();say("Prek një formë dhe vendose në tabelë.");
+}
+function preview(i){
+tiles.forEach(e=>e.classList.remove("ok","bad"));
+if(i===null||selected<0||!offers[selected])return;
+let p=offers[selected],r=Math.floor(i/8),c=i%8,ok=fits(p,r,c);
+p.shape.forEach(([y,x])=>{
+if(r+y<8&&c+x<8)tiles[(r+y)*8+c+x].classList.add(ok?"ok":"bad");
+});
+}
+function cellAt(x,y){
+let e=document.elementFromPoint(x,y),c=e&&e.closest(".cell");
+return c&&board.contains(c)?Number(c.dataset.i):null;
+}
+board.addEventListener("click",e=>{
+let c=e.target.closest(".cell");
+if(c)place(Number(c.dataset.i));
+});
+slots.forEach((el,i)=>{
+el.addEventListener("click",()=>{
+if(!offers[i])return;
+selected=i;render();say("Prek katrorin ku do ta vendosësh.");
+});
+el.addEventListener("pointerdown",e=>{
+if(!offers[i]||e.button>0)return;
+drag={id:e.pointerId,i,x:e.clientX,y:e.clientY,moved:false};
+selected=i;
+try{el.setPointerCapture(e.pointerId)}catch(err){}
+});
+});
+window.addEventListener("pointermove",e=>{
+if(!drag||drag.id!==e.pointerId)return;
+if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>8)drag.moved=true;
+if(!drag.moved)return;
+e.preventDefault();
+let ghost=$("ghost");
+ghost.style.display="block";
+ghost.style.left=(e.clientX-25)+"px";
+ghost.style.top=(e.clientY-110)+"px";
+ghost.replaceChildren(mini(offers[drag.i]));
+preview(cellAt(e.clientX,e.clientY-65));
+},{passive:false});
+window.addEventListener("pointerup",e=>{
+if(!drag||drag.id!==e.pointerId)return;
+let d=drag;drag=null;
+$("ghost").style.display="none";
+preview(null);selected=d.i;
+if(d.moved){
+let i=cellAt(e.clientX,e.clientY-65);
+if(i!==null)place(i);
+else{render();say("Lësho formën mbi tabelë.")}
+}else{render();say("Prek një katror në tabelë.")}
+});
+window.addEventListener("pointercancel",()=>{
+drag=null;$("ghost").style.display="none";preview(null);
+});
+$("restart").onclick=()=>{if(confirm("Ta fillojmë nga e para?"))reset()};
+$("again").onclick=reset;
+$("sound").onclick=()=>{
+sound=!sound;$("sound").textContent=sound?"♫":"✕";
+if(sound)tone();
+};
+$("hint").onclick=()=>{
+for(let p=0;p<3;p++)if(offers[p])
+for(let i=0;i<64;i++)
+if(fits(offers[p],Math.floor(i/8),i%8)){
+selected=p;render();preview(i);
+say("Vendose formën te katrorët jeshilë.");
+setTimeout(()=>preview(null),1800);return;
+}
+say("Nuk ka lëvizje të mundshme.");
+};
+try{
+let s=JSON.parse(localStorage.getItem(key));
+if(s&&Array.isArray(s.cells)&&s.cells.length===64&&Array.isArray(s.offers)&&s.offers.length===3){
+cells=s.cells;offers=s.offers;score=Number(s.score)||0;best=Number(s.best)||0;
+render();gameOver();
+}else reset();
+}catch(e){reset()}
+})();
+</script>
+</body>
+</html>
